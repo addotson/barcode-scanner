@@ -8,7 +8,8 @@ now=time.localtime(time.time())
 currentmonth=now.tm_mon
 currentday=now.tm_mday
 currentyear=now.tm_year
-filenameIN = "{0}_{1}_{2}_checkedIN.csv".format(currentyear, currentmonth, currentday)
+filenameIN = "{0}_{1}_{2}_checkedIN.csv".format(currentyear, 
+currentmonth, currentday)
 filenameOUT = "{0}_{1}_{2}_checkedOUT.csv".format(currentyear, currentmonth, currentday)
 
 #### informative messaging for starting storage file
