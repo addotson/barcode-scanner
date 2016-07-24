@@ -8,7 +8,8 @@ now=time.localtime(time.time())
 currentmonth=now.tm_mon
 currentday=now.tm_mday
 currentyear=now.tm_year
-filenameIN = "{0}_{1}_{2}_checkedIN.csv".format(currentyear, currentmonth, currentday)
+filenameIN = "{0}_{1}_{2}_checkedIN.csv".format(currentyear,
+currentmonth, currentday)
 filenameOUT = "{0}_{1}_{2}_checkedOUT.csv".format(currentyear, currentmonth, currentday)
 
 #### informative messaging for starting storage file
@@ -21,41 +22,30 @@ file=open(filenameOUT,"a")
 file.write("Barcode,Name,Time In,Time Out\n")
 file.close()
 
-global barcode
+checkSTATUS = 1
 
 while True:
     try:
         #input barcode of attendee
-        barcode = int(raw_input('Enter attendee barcode: '))
+        barcode = raw_input('Enter attendee barcode: ')
         #barcode = sys.stdin.readline().rstrip()
+        barcode_int = int(barcode)
 
-        if barcode == 1:
-            checkSTATUS = 1
-            print "Checking IN registered attendees!"
+        if barcode_int == 1:
+            checkSTATUS = raw_input('Checking in (1) or checking out (0): ')
+            checkSTATUS = int(checkSTATUS)
 
-        elif barcode == 0:
-            checkSTATUS = 0
-            print "Checking OUT registered attendees!"
-
-        elif barcode != 0 & barcode != 1:
+        else:
             if checkSTATUS == 1:
+
                 #read csv, and split on "," the line
                 attendee_csv_file = csv.reader(open('attendee_list.csv', "rb"), delimiter=",")
-
-                #get current time
-                now=time.localtime(time.time())
-                pt=time.asctime(now)  #formatted time for file
-                currentmonth=now.tm_mon
-                currentday=now.tm_mday
-                currentyear=now.tm_year
 
                 #loop through csv list
                 for row in attendee_csv_file:
                     #if current rows first value (0 row) is equal to input, print that row
-                    barcode = str(barcode)
                     if barcode == row[0]:
                         attendee = row[1].strip()
-                        print "Thank you,",attendee #prints only the numbered column in the found row
 
                         #get current time
                         now=time.localtime(time.time())
@@ -64,15 +54,17 @@ while True:
                         currentday=now.tm_mday
                         currentyear=now.tm_year
 
+                        #cast barcode to integer
                         barcode = int(barcode)
 
                         #write attendee name and check in time to file
                         file=open(filenameIN,"a")
                         file.write("%i,%s,%s\n" % (barcode,attendee,pt))
                         file.close()
-
+                        print "Thank you,",attendee,"for checking in!"
                     else:
-                        print "Attendee NOT registered!\n"
+                        #currently this reports for all lines scaned by above statement, need to find a way to surpress if attendee found.
+                        print "Scanned attendee not on list."
 
             elif checkSTATUS == 0:
                 #get current time
@@ -96,13 +88,13 @@ while True:
 
                         #write attendee name and check in time to file
                         file=open(filenameOUT,"a")
-                        file.write("%i,%s,%s,%s\n" % (barcode,attendee,timeIN,timeOUT))
+                        file.write("%s,%s,%s,%s\n" % (barcode,attendee,timeIN,timeOUT))
                         file.close()
-                        print "Thank you,",attendee #prints only the numbered column in the found row
-
-                    elif barcode != row[0]:
-                        print "Attendee NOT checked in!\n"
+                        print "Thank you,",attendee,"for checking out!"
+                    else:
+                        #currently this reports for all lines scaned by above statement, need to find a way to surpress if attendee found.
+                        print "Scanned attendee not checked in."
 
     except KeyboardInterrupt:
-        print '\ncaught keyboard interrupt!, bye'
-        sys.exit()
+            print '\ncaught keyboard interrupt!, bye'
+            sys.exit()
