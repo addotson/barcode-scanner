@@ -12,7 +12,7 @@ currentyear=now.tm_year
 
 #input barcode of attendee
 os.system('clear')
-print '**Welcome to Python Conference Barcode Attendance Tracker**'
+print '** Conference Barcode Attendance Tracker **'
 print '\nEnter session barcode: '
 session = sys.stdin.readline().rstrip()
 
@@ -49,58 +49,79 @@ elif not (os.path.isfile(filenameIN) and os.path.isfile(filenameOUT)):
     file.close()
 
 checkSTATUS = 1
+checkedINcount = 0
+checkedOUTcount = 0
 attendee_linecount = 0
-checkedIN_attendee_linecount = 0
+checkedIN_linecount = 0
+checkedin = 0
+checkedout = 0
 
 while True:
     try:
         attendee_csv_file = csv.reader(open('attendee_list.csv', "rb"), delimiter=",")
         attendee_row_count = sum(1 for row in attendee_csv_file)
+
+        checkedIN_rows = list( csv.reader(open(filenameIN)) )
+        checkedIN_row_count = len(checkedIN_rows)
+
         checkedIN_csv_file = csv.reader(open(filenameIN, "rb"), delimiter=",")
-        checkedIN_attendee_row_count = sum(1 for row in checkedIN_csv_file)
+        #checkedIN_row_count = sum(1 for row in checkedIN_csv_file)
+        #print checkedIN_row_count
+        attendee_csv_file = csv.reader(open('attendee_list.csv', "rb"), delimiter=",")
+        checkedOUT_csv_file = csv.reader(open(filenameOUT, "rb"), delimiter=",")
 
         #input barcode of attendee
         if checkSTATUS == 1:
             print "\nSession: {0}\n--- Checking IN ---\nEnter Barcode: ".format(session)
+            attendee_linecount = 0
+
         if checkSTATUS == 2:
             print "\nSession: {0}\n--- Checking OUT ---\nEnter Barcode: ".format(session)
+            checkedIN_linecount = 0
+            checkedin = 0
+
+        checkedINcount = 0
+        checkedOUTcount = 0
 
         barcode = sys.stdin.readline().rstrip()
-        barcode_int = int(barcode)
+        if barcode == 'config':
+            #currently key commands
+            # config - enter configuration mode
+            # checkin - check in
+            # checkout - check out
+            # exit - exit program
 
-        if barcode_int == 0000:
             print "Enter configuration barcode: "
             checkSTATUS = sys.stdin.readline().rstrip()
-            checkSTATUS = int(checkSTATUS)
-            #currently key commands
-            # 1 check in
-            # 2 check out
-            # 0 exit program
+            if checkSTATUS == 'checkin':
+                checkSTATUS = 1
+                checkSTATUS = int(checkSTATUS)
+            if checkSTATUS == 'checkout':
+                checkSTATUS = 2
+                checkSTATUS = int(checkSTATUS)
+
             time.sleep(2)
             os.system('clear')
 
-            if checkSTATUS == 0:
-                print '\nExiting program!, bye'
+            if checkSTATUS == 'exit':
+                print '\nExiting program! bye'
                 sys.exit()
 
         elif checkSTATUS == 1:
 
-            #read csv, and split on "," the line
-            checkedIN_csv_file = csv.reader(open(filenameIN, "rb"), delimiter=",")
             #loop through csv list
             for row in checkedIN_csv_file:
                 if barcode == row[0]:
-                    print "\nYou have already been checked in!\n"
-                    time.sleep(2)
                     os.system('clear')
+                    print '\x1b[0;30;43m' + '\nYou have already been checked in!\n' + '\x1b[0m'
+                    time.sleep(2)
                     checkedin = 1
+                    checkedINcount = checkedINcount + 1 #used to stop repeat check in
                 else:
                     checkedin = 0
 
-            #read csv, and split on "," the line
-            attendee_csv_file = csv.reader(open('attendee_list.csv', "rb"), delimiter=",")
             #loop through csv list
-            if checkedin == 0:
+            if checkedin == 0 and checkedINcount == 0:
                 for row in attendee_csv_file:
                     #if current rows first value (0 row) is equal to input, print that row
                     if barcode == row[0]:
@@ -120,18 +141,20 @@ while True:
                         file=open(filenameIN,"a")
                         file.write("%s,%s,%s,%s\n" % (barcode,attendee,session,pt))
                         file.close()
+
                         if attendee_linecount < attendee_row_count:
-                            print "\nThank you,",attendee,"for checking in!\n"
-                            time.sleep(2)
                             os.system('clear')
+                            print '\x1b[6;30;42m' + '\nThank you,',attendee,'for checking in!\n' + '\x1b[0m'
+                            time.sleep(2)
                             attendee_linecount = 0
-                    else:
-                        #currently this reports for all lines scaned by above statement, need to find a way to surpress if attendee found.
+                            checkedin = 1
+
+                    if barcode != row[0]:
                         attendee_linecount = attendee_linecount + 1
                         if attendee_linecount == attendee_row_count:
-                            print "\nScanned attendee not on list.\n"
-                            time.sleep(2)
                             os.system('clear')
+                            print '\x1b[1;30;41m' + '\nScanned attendee not on list.\n' + '\x1b[0m'
+                            time.sleep(2)
                             attendee_linecount = 0
 
         elif checkSTATUS == 2:
@@ -142,21 +165,16 @@ while True:
             currentday=now.tm_mday
             currentyear=now.tm_year
 
-            #read csv, and split on "," the line
-            checkedOUT_csv_file = csv.reader(open(filenameOUT, "rb"), delimiter=",")
             #loop through csv list
             for row in checkedOUT_csv_file:
                 if barcode == row[0]:
-                    print "\nYou have already been checked out!\n"
-                    time.sleep(2)
                     os.system('clear')
+                    print '\x1b[0;30;43m' + '\nYou have already been checked out!\n' + '\x1b[0m'
+                    time.sleep(2)
                     checkedout = 1
                 else:
                     checkedout = 0
-            #loop through csv list
 
-            #read csv, and split on "," the line
-            checkedIN_csv_file = csv.reader(open(filenameIN, "rb"), delimiter=",")
             #loop through csv list
             if checkedout == 0:
                 for row in checkedIN_csv_file:
@@ -171,19 +189,19 @@ while True:
                         file=open(filenameOUT,"a")
                         file.write("%s,%s,%s,%s,%s\n" % (barcode,attendee,session,timeIN,timeOUT))
                         file.close()
-                        if checkedIN_attendee_linecount < checkedIN_attendee_row_count:
-                            print "\nThank you,",attendee,"for checking out!\n"
-                            time.sleep(2)
-                            os.system('clear')
-                            checkedIN_attendee_linecount = 0
+                        os.system('clear')
+                        print '\x1b[6;30;42m' + '\nThank you,',attendee,'for checking out!\n' + '\x1b[0m'
+                        time.sleep(2)
+                        checkedout = 1
+
                     else:
-                        #currently this reports for all lines scaned by above statement, need to find a way to surpress if attendee found.
-                        checkedIN_attendee_linecount = checkedIN_attendee_linecount + 1
-                        if checkedIN_attendee_linecount == checkedIN_attendee_row_count:
-                            print "\nScanned attendee not checked in.\n"
-                            time.sleep(2)
+                        checkedIN_linecount = checkedIN_linecount + 1
+                        if checkedIN_linecount == checkedIN_row_count:
                             os.system('clear')
-                            checkedIN_attendee_linecount = 0
+                            print '\x1b[1;30;41m' +'\nScanned attendee not checked in.\n' + '\x1b[0m'
+                            time.sleep(2)
+                            checkedIN_linecount = 0
+                            checkedout = 1
 
         checkedout = 0
 
