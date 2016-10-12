@@ -19,7 +19,7 @@ session = sys.stdin.readline().rstrip()
 
 filenameIN = "{0}_{1}_{2}_{3}_checkedIN.csv".format(currentyear, currentmonth, currentday, session)
 filenameOUT = "{0}_{1}_{2}_{3}_checkedOUT.csv".format(currentyear, currentmonth, currentday, session)
-attendee_list = "attendee_list.csv"
+attendee_list = "AttendeeReport.csv"
 
 restart = True
 
@@ -125,8 +125,13 @@ while True:
             if checkedin == 0 and checkedINcount == 0:
                 for row in attendee_csv_file:
                     #if current rows first value (0 row) is equal to input, print that row
-                    if barcode == row[0]:
-                        attendee = row[1].strip()
+                    if barcode == row[2]:
+                        attendee = row[3].strip()
+
+                        attendeeQUOTE = '"'+attendee+'"'
+                        attendee.split(',')
+                        lastname, firstname = attendee.split(',')
+                        firstname = firstname.strip(' ')
 
                         #get current time
                         now=time.localtime(time.time())
@@ -140,17 +145,17 @@ while True:
 
                         #write attendee name and check in time to file
                         file=open(filenameIN,"a")
-                        file.write("%s,%s,%s,%s\n" % (barcode,attendee,session,pt))
+                        file.write("%s,%s,%s,%s\n" % (barcode,attendeeQUOTE,session,pt))
                         file.close()
 
                         if attendee_linecount < attendee_row_count:
                             os.system('clear')
-                            print '\x1b[6;30;42m' + '\nThank you,',attendee,'for checking in!\n' + '\x1b[0m'
+                            print '\x1b[6;30;42m' '\n',firstname,lastname,'-- Thank you for checking in!\n' + '\x1b[0m'
                             time.sleep(2)
                             attendee_linecount = 0
                             checkedin = 1
 
-                    if barcode != row[0]:
+                    if barcode != row[2]:
                         attendee_linecount = attendee_linecount + 1
                         if attendee_linecount == attendee_row_count:
                             os.system('clear')
@@ -183,15 +188,21 @@ while True:
                     if barcode == row[0]:
                         barcode = int(row[0])
                         attendee = row[1]
+
+                        attendeeQUOTE = '"'+attendee+'"'
+                        attendee.split(',')
+                        lastname, firstname = attendee.split(',')
+                        firstname = firstname.strip(' ')
+
                         timeIN = row[3]
                         timeOUT = pt
 
                         #write attendee name and check in time to file
                         file=open(filenameOUT,"a")
-                        file.write("%s,%s,%s,%s,%s\n" % (barcode,attendee,session,timeIN,timeOUT))
+                        file.write("%s,%s,%s,%s,%s\n" % (barcode,attendeeQUOTE,session,timeIN,timeOUT))
                         file.close()
                         os.system('clear')
-                        print '\x1b[6;30;42m' + '\nThank you,',attendee,'for checking out!\n' + '\x1b[0m'
+                        print '\x1b[6;30;42m' '\n',firstname,lastname,'-- Thank you for checking out!\n' + '\x1b[0m'
                         time.sleep(2)
                         checkedout = 1
 
